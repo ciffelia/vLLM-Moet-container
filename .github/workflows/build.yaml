@@ -1,0 +1,33 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions: {}
+
+env:
+  CONTAINER_IMAGE: ghcr.io/${{ github.repository_owner }}/vllm-moet
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    permissions:
+      packages: write
+    steps:
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Build
+        uses: docker/build-push-action@v7
+        with:
+          context: https://github.com/kacper-daftcode/vLLM-Moet.git#94be3aa3d7a8b82c7fc9687990a7edb6035f69f3
+          file: Dockerfile.sm120-v024
+          tags: |
+            ${{ env.CONTAINER_IMAGE }}:latest
+            ${{ env.CONTAINER_IMAGE }}:git-${{ github.sha }}
+          push: ${{ github.ref == 'refs/heads/main' }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
